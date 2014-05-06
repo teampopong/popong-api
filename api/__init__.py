@@ -9,6 +9,10 @@ from api.v0_1 import init_app as register_api_v0_1
 app = Flask(__name__)
 app.config.from_object('settings')
 
+@app.route('/')
+def main():
+    return "API running."
+
 init_db(app)
 register_api_v0_1(app)
 
