@@ -4,6 +4,7 @@ from flask import abort, request
 from flask.ext.sqlalchemy import BaseQuery
 from flask.views import MethodView
 
+from api.models.api_key import ApiKey
 from utils.jsonify import jsonify
 
 
@@ -23,6 +24,9 @@ class ApiView(MethodView):
 
     def get(self, _type=None, **kwargs):
         '''Dispatch GET request to an appropriate handler based on the `type`'''
+        if not self.is_valid_api_key(request.args.get('api_key')):
+            abort(401)
+
         if _type == 'single':
             return self.get_single(**kwargs)
         elif _type == 'search':
@@ -30,6 +34,12 @@ class ApiView(MethodView):
         elif _type == 'list':
             return self.get_list(self._query, **kwargs)
         raise Exception('unknown api request type: %s' % _type)
+
+    def is_valid_api_key(self, api_key):
+        if not api_key:
+            return False
+        record = ApiKey.query.filter_by(key=api_key).first()
+        return record is not None
 
     def get_single(self, id, **kwargs):
         '''Find a entry with `id` and return in JSON format.'''

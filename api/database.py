@@ -12,3 +12,14 @@ def init_app(app):
                                              bind=engine))
     Base.query = db_session.query_property()
 
+    init_db(engine)
+
+    @app.teardown_request
+    def shutdown_session(exception=None):
+        db_session.remove()
+
+
+def init_db(engine):
+    import api.models
+    Base.metadata.create_all(bind=engine)
+
