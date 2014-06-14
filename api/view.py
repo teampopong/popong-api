@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import abort, request
+from flask import abort, make_response, request
 from flask.ext.sqlalchemy import BaseQuery
 from flask.views import MethodView
 
@@ -27,13 +27,19 @@ class ApiView(MethodView):
         if not self.is_valid_api_key(request.args.get('api_key')):
             abort(401)
 
+        response = None
         if _type == 'single':
-            return self.get_single(**kwargs)
+            response = self.get_single(**kwargs)
         elif _type == 'search':
-            return self.get_list(self._search(), **kwargs)
+            response = self.get_list(self._search(), **kwargs)
         elif _type == 'list':
-            return self.get_list(self._query, **kwargs)
-        raise Exception('unknown api request type: %s' % _type)
+            response = self.get_list(self._query, **kwargs)
+        else:
+            raise Exception('unknown api request type: %s' % _type)
+
+        response = make_response(response)
+        response.headers['Content-Type'] = 'application/json'
+        return response
 
     def is_valid_api_key(self, api_key):
         if not api_key:
