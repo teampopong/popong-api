@@ -78,7 +78,10 @@ class ApiView(MethodView):
             raise NotImplementedError()
 
         q = request.args.get('q', '')
-        return self._query.filter(self.model.name.like(u'%{q}%'.format(q=q)))
+        s = request.args.get('s', '')
+        return self._query.filter(\
+                    self.model.name.like(u'%{q}%'.format(q=q)),
+                    self.model.sponsor.like(u'%{s}%'.format(s=s)))
 
     @property
     def _query(self):
