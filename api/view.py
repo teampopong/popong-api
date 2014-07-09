@@ -69,7 +69,7 @@ class ApiView(MethodView):
 
         key = getattr(self.model, key)
         if order == 'desc':
-            key = key.desc()
+            key = key.desc().nullslast()
 
         return query.order_by(key)
 
