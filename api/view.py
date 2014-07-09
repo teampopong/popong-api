@@ -78,10 +78,15 @@ class ApiView(MethodView):
             raise NotImplementedError()
 
         q = request.args.get('q', '')
-        s = request.args.get('s', '')
-        return self._query.filter(\
-                    self.model.name.like(u'%{q}%'.format(q=q)),
-                    self.model.sponsor.like(u'%{s}%'.format(s=s)))
+
+        if self.model.__module__=='popong_models.bill':
+            s = request.args.get('s', '')
+            return self._query.filter(\
+                        self.model.name.like(u'%{q}%'.format(q=q)),
+                        self.model.sponsor.like(u'%{s}%'.format(s=s)))
+        else:
+            return self._query.filter(\
+                        self.model.name.like(u'%{q}%'.format(q=q)))
 
     @property
     def _query(self):
