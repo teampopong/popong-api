@@ -11,20 +11,41 @@ from utils.jsonify import jsonify
 class ApiView(MethodView):
     '''Create basic REST HTTP endpoints for a single resource type.
     To create the endpoints, an API view class may inherit this class.
-    The view subclass should have :attr:`model` which inherits :class:`ApiModel`.
+    The view subclass should have :attr:`model` which inherits SQLAlchemy
+    :class:`Base`, and attributes named :attr:`kind_single` and
+    :attr:`kind_list`, which specify the resource type.
 
         class PersonApi(ApiView):
             model = Person
+            kind_single = 'person'
+            kind_list = 'people'
             ...
 
-        class Person(ApiModel):
+        class Person(Base):
             ...
+
+
+    The subclass may override any methods of this class to extend/filter
+    data given in the APIs:
+
+        def to_dict(self, entity):
+            d = {
+                'id': entity.id,
+                'title': entity.title,
+                'address': entity.extra_vars.get('address')
+            }
+            return d
     '''
+    # Should be overriden:
     model = None
+    kind_single = None
+    kind_list = None
+
+    __kind_top__ = 'popong'
 
     def get(self, _type=None, **kwargs):
         '''Dispatch GET request to an appropriate handler based on the `type`'''
-        if not self.is_valid_api_key(request.args.get('api_key')):
+        if not self._is_valid_api_key(request.args.get('api_key')):
             abort(401)
 
         response = None
@@ -41,12 +62,6 @@ class ApiView(MethodView):
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    def is_valid_api_key(self, api_key):
-        if not api_key:
-            return False
-        record = ApiKey.query.filter_by(key=api_key).first()
-        return record is not None
-
     def get_single(self, id, **kwargs):
         '''Find a entry with `id` and return in JSON format.'''
         query = self._query.filter_by(id=id)
@@ -60,6 +75,15 @@ class ApiView(MethodView):
             query = self._sort(query, key, order)
 
         return self._jsonify_list(query)
+
+    def to_dict(self, entity):
+        raise NotImplementedError()
+
+    def _is_valid_api_key(self, api_key):
+        if not api_key:
+            return False
+        record = ApiKey.query.filter_by(key=api_key).first()
+        return record is not None
 
     def _sort(self, query, key, order):
         if not hasattr(self.model, key):
@@ -88,7 +112,10 @@ class ApiView(MethodView):
         return BaseQuery(self.model, self.model.query.session)
 
     def _to_dict(self, entity):
-        return entity.to_dict(projection=request.args.get('projection'))
+        if not hasattr(entity, '__table__'):
+            raise Exception('ApiModel should inherit `Base` class')
+
+        return self.to_dict(entity)
 
     def _jsonify_single(self, query):
         '''Compose a `single`-typed response data.'''
@@ -97,7 +124,7 @@ class ApiView(MethodView):
             abort(404)
 
         result = self._to_dict(entity)
-        result['kind'] = self.model.kind('single')
+        result['kind'] = self._kind('single')
         return jsonify(result)
 
     def _jsonify_list(self, query):
@@ -106,7 +133,7 @@ class ApiView(MethodView):
                               int(request.args.get('per_page', 20)))
 
         result = {}
-        result['kind'] = self.model.kind('list')
+        result['kind'] = self._kind('list')
         result['items'] = [self._to_dict(entity) for entity in page.items]
         if page.has_prev:
             result['prev_page'] = page.prev_num
@@ -114,4 +141,12 @@ class ApiView(MethodView):
             result['next_page'] = page.next_num
 
         return jsonify(result)
+
+    def _kind(self, _type):
+        if _type == 'single':
+            return '%s#%s' % (self.__kind_top__, self.kind_single)
+        elif _type == 'list':
+            return '%s#%s' % (self.__kind_top__, self.kind_list)
+        else:
+            raise Exception('Unknown argument')
 
