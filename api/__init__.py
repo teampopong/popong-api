@@ -4,10 +4,11 @@ from flask import Flask, jsonify
 
 from api.database import init_app as init_db
 from api.v0_1 import init_app as register_api_v0_1
+from api.v0_2 import init_app as register_api_v0_2
 import settings
 
 
-versions = ['v0.1']
+versions = ['v0.1', 'v0.2']
 
 app = Flask(__name__)
 app.config.from_object('settings')
@@ -37,3 +38,5 @@ def error_404(error):
 
 init_db(app)
 register_api_v0_1(app)
+register_api_v0_2(app)
+
