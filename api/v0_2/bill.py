@@ -30,6 +30,7 @@ class BillApi(ApiView):
             'document_url': bill.document_url,
             'sponsor': bill.sponsor,
             'status': bill.status,
+            'cosponsors': [{ 'id': p.id, 'name': p.name } for p in bill.cosponsors],
         }
         return d
 
