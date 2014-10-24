@@ -97,12 +97,13 @@ class ApiView(MethodView):
 
         return query.order_by(key)
 
-    def _search(self):
-        if not self.model or not hasattr(self.model, 'name'):
+    def _search(self, fieldname='name'):
+        if not self.model or not hasattr(self.model, fieldname):
             raise NotImplementedError()
 
         q = request.args.get('q', '')
-        return self._query.filter(self.model.name.like(u'%{q}%'.format(q=q)))
+        return self._query.filter(getattr(self.model, fieldname).\
+                like(u'%{q}%'.format(q=q)))
 
     @property
     def _query(self):

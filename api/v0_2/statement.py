@@ -11,6 +11,9 @@ class StatementApi(ApiView):
     kind_single = 'statement'
     kind_list = 'statements'
 
+    def _search(self):
+        return super(StatementApi, self)._search(fieldname='content')
+
     def to_dict(self, statement):
         d = {
             'id': statement.id,
