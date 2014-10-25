@@ -23,6 +23,7 @@ class StatementApi(ApiView):
             'speaker': statement.speaker,
             'content': statement.content,
             'date': statement.date,
+            'url': 'http://pokr.kr/meeting/%s/dialog#%s' % (statement.meeting_id, statement.id)
         }
         return d
 
