@@ -15,6 +15,7 @@ class PartyApi(ApiView):
             'name': party.name,
             'color': party.color,
             'logo': party.logo,
+            'size': party.size,
         }
         return d
 

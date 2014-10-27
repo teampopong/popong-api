@@ -30,6 +30,10 @@ class BillApi(ApiView):
             'document_url': bill.document_url,
             'sponsor': bill.sponsor,
             'status': bill.status,
+            'status_id': bill.status_id,
+            'status_ids': bill.status_ids,
+            'link_id': bill.link_id,
+            'is_processed': bill.is_processed,
         }
         return d
 

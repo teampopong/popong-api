@@ -27,6 +27,9 @@ class PersonApi(ApiView):
             'facebook': person.facebook,
             'homepage': person.homepage,
             'wiki': person.wiki,
+            'blog': person.blog,
+            'education_id': person.education_id,
+            'address_id': person.address_id,
         }
         return d
 
