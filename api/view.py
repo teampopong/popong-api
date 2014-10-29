@@ -103,7 +103,7 @@ class ApiView(MethodView):
 
         q = request.args.get('q', '')
         return self._query.filter(getattr(self.model, fieldname).\
-                like(u'%{q}%'.format(q=q)))
+                like(u'%{q}%'.format(q=q))).order_by('id')
 
     @property
     def _query(self):
