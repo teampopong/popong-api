@@ -17,6 +17,9 @@ class BillApi(ApiView):
         s = request.args.get('s', '')
         query = query.filter(self.model.sponsor.like(u'%{s}%'.format(s=s)))
 
+        assembly_id = request.args.get('assembly_id', '')
+        query = query.filter_by(assembly_id=assembly_id)
+
         return query
 
     def to_dict(self, bill):
